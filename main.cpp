@@ -1,7 +1,9 @@
+#include "shape.hpp"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <vector>
 
 // シェーダオブジェクトのコンパイル結果を表示する
@@ -137,6 +139,12 @@ GLuint loadProgram(const char* vert, const char* frag)
     return vstat && fstat ? createProgram(vsrc.data(), fsrc.data()) : 0;
 }
 
+// 矩形の頂点の位置
+constexpr Object::Vertex rectangleVertex[] = {
+    {-0.5f, -0.5f},
+    {0.5f, -0.5f},
+    {0.5f, 0.5f},
+    {-0.5f, 0.5f}};
 
 int main()
 {
@@ -176,7 +184,7 @@ int main()
     glfwSwapInterval(1);
 
     // 背景色 (OpenGL)
-    glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+    glClearColor(0.6f, 0.6f, 0.6f, 0.0f);
 
     // GLEW を初期化する
     glewExperimental = GL_TRUE;
@@ -188,6 +196,9 @@ int main()
     // プログラムオブジェクトを作成する
     const GLuint program(loadProgram("../point.vert", "../point.frag"));
 
+    // 図形データを作成する
+    std::unique_ptr<const Shape> shape(new Shape(2, 4, rectangleVertex));
+
     // ウィンドウが開いている間繰り返す
     while (glfwWindowShouldClose(/* GLFWwindow * window = */ window) == GL_FALSE) {
         // ウィンドウを消去 (GLFW)
@@ -196,7 +207,8 @@ int main()
         // シェーダプログラムの使用開始
         glUseProgram(program);
 
-        // 描画処理
+        // 図形を描画する
+        shape->draw();
 
         // カラーバッファ入れ替え <= ダブルバッファリング (GLFW)
         glfwSwapBuffers(window);
