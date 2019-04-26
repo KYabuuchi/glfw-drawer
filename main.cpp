@@ -1,6 +1,53 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <fstream>
 #include <iostream>
+#include <vector>
+
+// シェーダオブジェクトのコンパイル結果を表示する
+// shader: シェーダオブジェクト名
+// str: コンパイルエラーが発生した場所を示す文字列
+GLboolean printShaderInfoLog(GLuint shader, const char* str)
+{
+    // コンパイル結果を取得する
+    GLint status;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+    if (status == GL_FALSE)
+        std::cerr << "Compile Error in " << str << std::endl;
+    // シェーダのコンパイル時のログの長さを取得する
+    GLsizei bufSize;
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &bufSize);
+    if (bufSize > 1) {
+        // シェーダのコンパイル時のログの内容を取得する
+        std::vector<GLchar> infoLog(bufSize);
+        GLsizei length;
+        glGetShaderInfoLog(shader, bufSize, &length, &infoLog[0]);
+        std::cerr << &infoLog[0] << std::endl;
+    }
+    return static_cast<GLboolean>(status);
+}
+
+// プログラムオブジェクトのリンク結果を表示する
+// program: プログラムオブジェクト名
+GLboolean printProgramInfoLog(GLuint program)
+{
+    // リンク結果を取得する
+    GLint status;
+    glGetProgramiv(program, GL_LINK_STATUS, &status);
+    if (status == GL_FALSE)
+        std::cerr << "Link Error." << std::endl;
+    // シェーダのリンク時のログの長さを取得する
+    GLsizei bufSize;
+    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &bufSize);
+    if (bufSize > 1) {
+        // シェーダのリンク時のログの内容を取得する
+        std::vector<GLchar> infoLog(bufSize);
+        GLsizei length;
+        glGetProgramInfoLog(program, bufSize, &length, &infoLog[0]);
+        std::cerr << &infoLog[0] << std::endl;
+    }
+    return static_cast<GLboolean>(status);
+}
 
 // プログラムオブジェクトを作成する
 // vsrc: バーテックスシェーダのソースプログラムの文字列
@@ -15,7 +62,8 @@ GLuint createProgram(const char* vsrc, const char* fsrc)
         glShaderSource(vobj, 1, &vsrc, NULL);
         glCompileShader(vobj);
         // バーテックスシェーダのシェーダオブジェクトをプログラムオブジェクトに組み込む
-        glAttachShader(program, vobj);
+        if (printShaderInfoLog(vobj, "vertex shader"))
+            glAttachShader(program, vobj);
         glDeleteShader(vobj);
     }
     if (fsrc != NULL) {
@@ -24,7 +72,8 @@ GLuint createProgram(const char* vsrc, const char* fsrc)
         glShaderSource(fobj, 1, &fsrc, NULL);
         glCompileShader(fobj);
         // フラグメントシェーダのシェーダオブジェクトをプログラムオブジェクトに組み込む
-        glAttachShader(program, fobj);
+        if (printShaderInfoLog(fobj, "fragment shader"))
+            glAttachShader(program, fobj);
         glDeleteShader(fobj);
     }
     // プログラムオブジェクトをリンクする
@@ -32,21 +81,67 @@ GLuint createProgram(const char* vsrc, const char* fsrc)
     glBindFragDataLocation(program, 0, "fragment");
     glLinkProgram(program);
     // 作成したプログラムオブジェクトを返す
-    return program;
+    if (printProgramInfoLog(program))
+        return program;
+
+    glDeleteProgram(program);
+    return 0;
 }
 
-static const char* vsrc = "#version 150 core¥n"
-                          "in vec4 position;¥n"
-                          "void main()¥n"
-                          "{¥n"
-                          " gl_Position = position;¥n"
-                          "}¥n";
+// シェーダのソースファイルを読み込んだメモリを返す
+// name: シェーダのソースファイル名
+// buffer: 読み込んだソースファイルのテキスト
+bool readShaderSource(const char* name, std::vector<GLchar>& buffer)
+{
+    // ファイル名が NULL だった
+    if (name == NULL)
+        return false;
+    // ソースファイルを開く
+    std::ifstream file(name, std::ios::binary);
+    if (file.fail()) {
+        // 開けなかった
+        std::cerr << "Error: Can't open source file: " << name << std::endl;
+        return false;
+    }
+    // ファイルの末尾に移動し現在位置(=ファイルサイズ)を得る
+    file.seekg(0L, std::ios::end);
+    GLsizei length = static_cast<GLsizei>(file.tellg());
+    // ファイルサイズのメモリを確保
+    buffer.resize(length + 1);
+    // ファイルを先頭から読み込む
+    file.seekg(0L, std::ios::beg);
+    file.read(buffer.data(), length);
+    buffer[length] = '\0';
+    if (file.fail()) {
+        // うまく読み込めなかった
+        std::cerr << "Error: Could not read souce file: " << name << std::endl;
+        file.close();
+        return false;
+    }
+    // 読み込み成功
+    file.close();
+    return true;
+}
+
+// シェーダのソースファイルを読み込んでプログラムオブジェクトを作成する
+// vert: バーテックスシェーダのソースファイル名
+// frag: フラグメントシェーダのソースファイル名
+GLuint loadProgram(const char* vert, const char* frag)
+{
+    // シェーダのソースファイルを読み込む
+    std::vector<GLchar> vsrc;
+    const bool vstat(readShaderSource(vert, vsrc));
+    std::vector<GLchar> fsrc;
+    const bool fstat(readShaderSource(frag, fsrc));
+    // プログラムオブジェクトを作成する
+    return vstat && fstat ? createProgram(vsrc.data(), fsrc.data()) : 0;
+}
+
 
 int main()
 {
     // GLFW の初期化 (GLFW)
     if (glfwInit() == GL_FALSE) {
-        // 初期化に失敗した処理
         std::cerr << "Can't initialize GLFW" << std::endl;
         return 1;
     }
@@ -54,7 +149,7 @@ int main()
     // 終了時の処理登録 (GLFW)
     std::atexit(glfwTerminate);
 
-    // OpenGL Version 3.2 Core Profile を選択する
+    // OpenGL Version 3.2 Core Profile を選択する(GLFW)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -77,40 +172,21 @@ int main()
     glfwMakeContextCurrent(/* GLFWwindow *  window = */ window);
 
     // 垂直同期のタイミングを待つ
+    /// カラーバッファを入れ替えるタイミングを指定する
     glfwSwapInterval(1);
 
     // 背景色 (OpenGL)
-    glClearColor(
-        /* GLfloat red   = */ 0.2f,
-        /* GLfloat green = */ 0.2f,
-        /* GLfloat blue  = */ 0.2f,
-        /* GLfloat alpha = */ 0.0f);
+    glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
 
     // GLEW を初期化する
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) {
-        // GLEW の初期化に失敗した
         std::cerr << "Can't initialize GLEW" << std::endl;
         return 1;
     }
 
-    // バーテックスシェーダのソースプログラム
-    static constexpr GLchar vsrc[] = "#version 150 core¥n"
-                                     "in vec4 position;¥n"
-                                     "void main()¥n"
-                                     "{¥n"
-                                     " gl_Position = position;¥n"
-                                     "}¥n";
-    // フラグメントシェーダのソースプログラム
-    static constexpr GLchar fsrc[] = "#version 150 core¥n"
-                                     "out vec4 fragment;¥n"
-                                     "void main()¥n"
-                                     "{¥n"
-                                     " fragment = vec4(1.0, 0.0, 0.0, 1.0);¥n"
-                                     "}¥n";
     // プログラムオブジェクトを作成する
-    const GLuint program(createProgram(vsrc, fsrc));
-
+    const GLuint program(loadProgram("../point.vert", "../point.frag"));
 
     // ウィンドウが開いている間繰り返す
     while (glfwWindowShouldClose(/* GLFWwindow * window = */ window) == GL_FALSE) {
@@ -127,6 +203,9 @@ int main()
 
         // イベント待ち (GLFW)
         glfwWaitEvents();
+
+        // イベント待ち(ブロックしない) (GLFW)
+        // glfwWaitEvents();
     }
 
     return 0;
