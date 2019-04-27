@@ -80,7 +80,9 @@ GLuint createProgram(const char* vsrc, const char* fsrc)
         glDeleteShader(fobj);
     }
     // プログラムオブジェクトをリンクする
+
     glBindAttribLocation(program, 0, "position");
+    glBindAttribLocation(program, 1, "color");
     glBindFragDataLocation(program, 0, "fragment");
     glLinkProgram(program);
     // 作成したプログラムオブジェクトを返す
@@ -142,10 +144,10 @@ GLuint loadProgram(const char* vert, const char* frag)
 
 // 矩形の頂点の位置
 constexpr Object::Vertex rectangleVertex[] = {
-    {-0.5f, -0.5f},
-    {0.5f, -0.5f},
-    {0.5f, 0.5f},
-    {-0.5f, 0.5f}};
+    {-0.5f, -0.5f, 1.0f, 1.0f, 0.0f},
+    {0.5f, -0.5f, 0.0f, 1.0f, 1.0f},
+    {0.5f, 0.5f, 0.0f, 1.0f, 1.0f},
+    {-0.5f, 0.5f, 1.0f, 0.0f, 1.0f}};
 
 int main()
 {
@@ -185,6 +187,7 @@ int main()
     // uniform 変数の場所を取得する
     const GLint sizeLoc(glGetUniformLocation(program, "size"));
     const GLint scaleLoc(glGetUniformLocation(program, "scale"));
+    const GLint locationLoc(glGetUniformLocation(program, "location"));
 
     // 図形データを作成する
     std::unique_ptr<const Shape> shape(new Shape(2, 4, rectangleVertex));
@@ -200,6 +203,7 @@ int main()
         // uniform 変数に値を設定する
         glUniform2fv(sizeLoc, 1, window.getSize());
         glUniform1f(scaleLoc, window.getScale());
+        glUniform2fv(locationLoc, 1, window.getLocation());
 
         // 図形を描画する
         shape->draw();
