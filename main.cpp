@@ -1,4 +1,5 @@
 #include "shape.hpp"
+#include "window.hpp"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <fstream>
@@ -164,24 +165,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // ウィンドウを作成 (GLFW)
-    GLFWwindow* const window(glfwCreateWindow(
-        /* int width  = */ 640,
-        /* int height  = */ 480,
-        /* const char  * title   = */ "Hello!",
-        /* GLFWmonitor * monitor = */ NULL,
-        /* GLFWwindow  * share   = */ NULL));
-    if (window == NULL) {
-        // ウィンドウ作成に失敗した処理
-        std::cerr << "Can't create GLFW window." << std::endl;
-        return 1;
-    }
-
-    // 作成したウィンドウを処理対象とする (GLFW)
-    glfwMakeContextCurrent(/* GLFWwindow *  window = */ window);
-
-    // 垂直同期のタイミングを待つ
-    /// カラーバッファを入れ替えるタイミングを指定する
-    glfwSwapInterval(1);
+    Window window;
 
     // 背景色 (OpenGL)
     glClearColor(0.6f, 0.6f, 0.6f, 0.0f);
@@ -192,32 +176,36 @@ int main()
         std::cerr << "Can't initialize GLEW" << std::endl;
         return 1;
     }
+    // ビューポートを設定する
+    glViewport(100, 50, 300, 300);
 
     // プログラムオブジェクトを作成する
     const GLuint program(loadProgram("../point.vert", "../point.frag"));
+
+    // uniform 変数の場所を取得する
+    const GLint sizeLoc(glGetUniformLocation(program, "size"));
+    const GLint scaleLoc(glGetUniformLocation(program, "scale"));
 
     // 図形データを作成する
     std::unique_ptr<const Shape> shape(new Shape(2, 4, rectangleVertex));
 
     // ウィンドウが開いている間繰り返す
-    while (glfwWindowShouldClose(/* GLFWwindow * window = */ window) == GL_FALSE) {
+    while (window.shouldClose() == GL_FALSE) {
         // ウィンドウを消去 (GLFW)
         glClear(/* GLbitfield mask = */ GL_COLOR_BUFFER_BIT);
 
         // シェーダプログラムの使用開始
         glUseProgram(program);
 
+        // uniform 変数に値を設定する
+        glUniform2fv(sizeLoc, 1, window.getSize());
+        glUniform1f(scaleLoc, window.getScale());
+
         // 図形を描画する
         shape->draw();
 
         // カラーバッファ入れ替え <= ダブルバッファリング (GLFW)
-        glfwSwapBuffers(window);
-
-        // イベント待ち (GLFW)
-        glfwWaitEvents();
-
-        // イベント待ち(ブロックしない) (GLFW)
-        // glfwWaitEvents();
+        window.swapBuffers();
     }
 
     return 0;

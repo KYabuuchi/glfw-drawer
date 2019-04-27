@@ -27,8 +27,7 @@ public:
         // 頂点バッファオブジェクト
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER,
-            vertexcount * sizeof(Vertex), vertex, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vertexcount * sizeof(Vertex), vertex, GL_STATIC_DRAW);
         // 結合されている頂点バッファオブジェクトを in 変数から参照できるようにする
         glVertexAttribPointer(0, size, GL_FLOAT, GL_FALSE, 0, 0);
         glEnableVertexAttribArray(0);
