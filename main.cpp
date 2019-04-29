@@ -1,18 +1,18 @@
-#include "graphic/load.hpp"
-#include "graphic/shape.hpp"
-#include "graphic/window.hpp"
+#include "graphic/graphic.hpp"
 #include <memory>
+
+constexpr Graphic::Object::Vertex tmp[] = {
+    {0.0f, 0.0f, 1.0f, 1.0f, 0.0f},
+    {0.0f, 0.5f, 1.0f, 1.0f, 0.0f}};
+constexpr Graphic::Object::Vertex rectangleVertex[] = {
+    {-0.5f, -0.5f, 1.0f, 1.0f, 0.0f},
+    {0.5f, -0.5f, 0.0f, 1.0f, 1.0f},
+    {0.5f, 0.5f, 0.0f, 1.0f, 1.0f},
+    {-0.5f, 0.5f, 1.0f, 0.0f, 1.0f}};
 
 int main()
 {
     using namespace Graphic;
-
-    // 矩形の頂点の位置
-    constexpr Object::Vertex rectangleVertex[] = {
-        {-0.5f, -0.5f, 1.0f, 1.0f, 0.0f},
-        {0.5f, -0.5f, 0.0f, 1.0f, 1.0f},
-        {0.5f, 0.5f, 0.0f, 1.0f, 1.0f},
-        {-0.5f, 0.5f, 1.0f, 0.0f, 1.0f}};
 
     // GLFW の初期化 (GLFW)
     if (glfwInit() == GL_FALSE) {
@@ -31,9 +31,10 @@ int main()
 
     // ウィンドウを作成 (GLFW)
     Window window;
+    Window window1(640, 480, "2");
 
-    // 背景色 (OpenGL)
-    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+    // 背景色
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     // GLEW を初期化する
     glewExperimental = GL_TRUE;
@@ -52,15 +53,12 @@ int main()
     const GLint scaleLoc(glGetUniformLocation(program, "scale"));
     const GLint locationLoc(glGetUniformLocation(program, "location"));
 
-    // 図形データを作成する
-    std::unique_ptr<const Shape> shape(new Shape(2, 4, rectangleVertex));
+    std::unique_ptr<const Shape> shape1 = std::make_unique<const Rectangle>(2, 4, rectangleVertex);
+    std::unique_ptr<const Shape> shape2 = std::make_unique<const Points>(2, 1, tmp);
 
-    // ウィンドウが開いている間繰り返す
     while (window.shouldClose() == GL_FALSE) {
-        // ウィンドウを消去 (GLFW)
         glClear(/* GLbitfield mask = */ GL_COLOR_BUFFER_BIT);
 
-        // シェーダプログラムの使用開始
         glUseProgram(program);
 
         // uniform 変数に値を設定する
@@ -68,11 +66,18 @@ int main()
         glUniform2fv(sizeLoc, 1, window.getSize());
         glUniform2fv(locationLoc, 1, window.getLocation());
 
-        // 図形を描画する
-        shape->draw();
+        // uniform 変数に値を設定する
+        glUniform1f(scaleLoc, window1.getScale());
+        glUniform2fv(sizeLoc, 1, window1.getSize());
+        glUniform2fv(locationLoc, 1, window1.getLocation());
 
-        // カラーバッファ入れ替え <= ダブルバッファリング (GLFW)
+
+        // 図形を描画する
+        shape1->draw();
+        shape2->draw();
+
         window.swapBuffers();
+        window1.swapBuffers();
     }
 
     return 0;
