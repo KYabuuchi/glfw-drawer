@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 // 図形データ
-#include "object.hpp"
+#include "graphic/object.hpp"
 // 図形の描画
 class Shape
 {

@@ -2,7 +2,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
-// ウィンドウ関連の処理
+
 class Window
 {
     // ウィンドウのハンドル
@@ -51,7 +51,7 @@ public:
         glfwDestroyWindow(window);
     }
     // マウスホイール操作時の処理
-    static void wheel(GLFWwindow* window, double x, double y)
+    static void wheel(GLFWwindow* window, double, double y)
     {
         // このインスタンスの this ポインタを得る
         Window* const
