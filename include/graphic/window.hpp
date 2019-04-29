@@ -3,61 +3,52 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+namespace Graphic
+{
 class Window
 {
-    // ウィンドウのハンドル
+private:
     GLFWwindow* const window;
-    // ウィンドウのサイズ
     GLfloat size[2];
-    // ワールド座標系に対するデバイス座標系の拡大率
     GLfloat scale;
-    // 図形の正規化デバイス座標系上での位置
     GLfloat location[2];
 
 public:
-    // コンストラクタ
-    Window(int width = 640, int height = 480, const char* title = "Hello!")
+    Window(int width = 640, int height = 480, const char* title = "OpenGL")
         : window(glfwCreateWindow(width, height, title, NULL, NULL)), scale(100.0f), location{0, 0}
     {
         if (window == NULL) {
-            // ウィンドウが作成できなかった
             std::cerr << "Can't create GLFW window." << std::endl;
             exit(1);
         }
-        // 現在のウィンドウを処理対象にする
         glfwMakeContextCurrent(window);
 
-        // GLEW を初期化する
         glewExperimental = GL_TRUE;
         if (glewInit() != GLEW_OK) {
-            // GLEW の初期化に失敗した
             std::cerr << "Can't initialize GLEW" << std::endl;
             exit(1);
         }
+
         // 垂直同期のタイミングを待つ
         glfwSwapInterval(1);
-        // このインスタンスの this ポインタを記録しておく
+
+        // このインスタンスの this ポインタを記録
         glfwSetWindowUserPointer(window, this);
-        // ウィンドウのサイズ変更時に呼び出す処理の登録
+        // callback
         glfwSetWindowSizeCallback(window, resize);
-        // マウスホイール操作時に呼び出す処理の登録
         glfwSetScrollCallback(window, wheel);
-        // 開いたウィンドウの初期設定
+
         resize(window, width, height);
     }
-    // デストラクタ
-    virtual ~Window()
-    {
-        glfwDestroyWindow(window);
-    }
-    // マウスホイール操作時の処理
+
+    virtual ~Window() { glfwDestroyWindow(window); }
+
+    // mouse wheel
     static void wheel(GLFWwindow* window, double, double y)
     {
-        // このインスタンスの this ポインタを得る
         Window* const
         instance(static_cast<Window*>(glfwGetWindowUserPointer(window)));
         if (instance != NULL) {
-            // ワールド座標系に対するデバイス座標系の拡大率を更新する
             instance->scale += static_cast<GLfloat>(y);
         }
     }
@@ -75,35 +66,30 @@ public:
             instance->size[1] = static_cast<GLfloat>(height);
         }
     }
-    // ウィンドウのサイズを取り出す
-    const GLfloat* getSize() const { return size; }
-    // ワールド座標系に対するデバイス座標系の拡大率を取り出す
-    GLfloat getScale() const { return scale; }
-    // 位置を取り出す
-    const GLfloat* getLocation() const { return location; }
 
-    // ウィンドウを閉じるべきかを判定する
-    int shouldClose() const
-    {
-        return glfwWindowShouldClose(window) || glfwGetKey(window, GLFW_KEY_Q);
-    }
-    // カラーバッファを入れ替えてイベントを取り出す
+    const GLfloat* getSize() const { return size; }
+    const GLfloat* getLocation() const { return location; }
+    GLfloat getScale() const { return scale; }
+
+    int shouldClose() const { return glfwWindowShouldClose(window) || glfwGetKey(window, GLFW_KEY_Q); }
+
     void swapBuffers()
     {
-        // カラーバッファを入れ替える
         glfwSwapBuffers(window);
-        // イベントを取り出す
+
+        // イベント処理待ち
         glfwWaitEvents();
         // glfwPollEvents();
 
-        // マウスの左ボタンの状態を調べる
+        // マウスの左ボタン
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) != GLFW_RELEASE) {
-            // マウスの左ボタンが押されていたらマウスカーソルの位置を取得する
             double x, y;
             glfwGetCursorPos(window, &x, &y);
-            // マウスカーソルの正規化デバイス座標系上での位置を求める
+
+            // screen coord => nomrl coord
             location[0] = static_cast<GLfloat>(x) * 2.0f / size[0] - 1.0f;
             location[1] = 1.0f - static_cast<GLfloat>(y) * 2.0f / size[1];
         }
     }
 };
+}  // namespace Graphic

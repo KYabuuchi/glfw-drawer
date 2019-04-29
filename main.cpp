@@ -3,15 +3,17 @@
 #include "graphic/window.hpp"
 #include <memory>
 
-// 矩形の頂点の位置
-constexpr Object::Vertex rectangleVertex[] = {
-    {-0.5f, -0.5f, 1.0f, 1.0f, 0.0f},
-    {0.5f, -0.5f, 0.0f, 1.0f, 1.0f},
-    {0.5f, 0.5f, 0.0f, 1.0f, 1.0f},
-    {-0.5f, 0.5f, 1.0f, 0.0f, 1.0f}};
-
 int main()
 {
+    using namespace Graphic;
+
+    // 矩形の頂点の位置
+    constexpr Object::Vertex rectangleVertex[] = {
+        {-0.5f, -0.5f, 1.0f, 1.0f, 0.0f},
+        {0.5f, -0.5f, 0.0f, 1.0f, 1.0f},
+        {0.5f, 0.5f, 0.0f, 1.0f, 1.0f},
+        {-0.5f, 0.5f, 1.0f, 0.0f, 1.0f}};
+
     // GLFW の初期化 (GLFW)
     if (glfwInit() == GL_FALSE) {
         std::cerr << "Can't initialize GLFW" << std::endl;
@@ -40,7 +42,7 @@ int main()
         return 1;
     }
     // ビューポートを設定する
-    glViewport(100, 50, 300, 300);
+    glViewport(0, 0, 640, 480);
 
     // プログラムオブジェクトを作成する
     const GLuint program = createProgram();
@@ -62,8 +64,8 @@ int main()
         glUseProgram(program);
 
         // uniform 変数に値を設定する
-        glUniform2fv(sizeLoc, 1, window.getSize());
         glUniform1f(scaleLoc, window.getScale());
+        glUniform2fv(sizeLoc, 1, window.getSize());
         glUniform2fv(locationLoc, 1, window.getLocation());
 
         // 図形を描画する
