@@ -15,7 +15,7 @@ public:
     };
 
     // コンストラクタ
-    Object(GLint dimension, GLsizei vertex_count, const std::vector<Vertex>& vertex)
+    Object(const std::vector<Vertex>& vertex, GLsizei vertex_count, GLint dimension)
     {
         // VAO
         glGenVertexArrays(1, &vao);

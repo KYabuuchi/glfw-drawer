@@ -14,11 +14,17 @@ int main()
     }
 
 
-    for (int i = 0; i < 3; i++) {
-        drawPoints(points);
+    while (1) {
+        if (not isRunning())
+            break;
+
+        draw(points, Form::POINTS, Color::YELLOW);
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         clear();
+        draw(Eigen::Vector2d(0.5, 0.5), Form::POINT, Color::GREEN);
+        draw(points, Form::CURVE, Color::PURPLE);
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        clear();
     }
 
     finalize();

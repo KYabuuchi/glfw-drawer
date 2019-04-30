@@ -6,7 +6,6 @@
 
 namespace Graphic
 {
-
 namespace
 {
 std::thread drawing_thread;
@@ -17,13 +16,16 @@ std::mutex draw_mtx;
 std::mutex stop_mtx;
 bool stop_request = false;
 
-const Graphic::Object::Vertex rectangleVertex[] = {
-    {-0.5f, -0.5f, 1.0f, 1.0f, 0.0f},
-    {0.5f, -0.5f, 0.0f, 1.0f, 1.0f},
-    {0.5f, 0.5f, 0.0f, 1.0f, 1.0f},
-    {-0.5f, 0.5f, 1.0f, 0.0f, 1.0f}};
-
-const GLfloat RED[] = {1.0f, 0.0f, 0.0f};
+const std::vector<std::array<GLfloat, 3>> RGB
+    = {
+        {1.0f, 0.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 0.0f, 1.0f},
+        {1.0f, 1.0f, 0.0f},
+        {0.9f, 0.0f, 1.0f},
+        {1.0f, 1.0f, 1.0f},
+        {0.0f, 0.0f, 0.0f},
+};
 
 }  // namespace
 
@@ -67,6 +69,11 @@ void drawing()
     window = nullptr;
 }
 
+bool isRunning()
+{
+    return window != nullptr;
+}
+
 void initialize()
 {
     if (glfwInit() == GL_FALSE) {
@@ -105,26 +112,23 @@ void finalize()
     drawing_thread.join();
 }
 
-void drawPoints(const std::vector<Eigen::Vector2d>& points)
+void draw(const Eigen::Vector2d& point, Form form, Color color)
+{
+    draw(std::vector<Eigen::Vector2d>{point}, form, color);
+}
+
+void draw(const std::vector<Eigen::Vector2d>& points, Form form, Color color)
 {
     std::vector<Object::Vertex> tmp;
     for (const auto& p : points) {
         tmp.push_back({static_cast<GLfloat>(p.x()),
             static_cast<GLfloat>(p.y()),
-            RED[0], RED[1], RED[2]});
+            RGB[color][0], RGB[color][1], RGB[color][2]});
     }
 
     std::lock_guard lock(draw_mtx);
-
-    shape_callback.push_back(std::make_shared<const Points>(2, points.size(), tmp));
+    shape_callback.push_back(std::make_shared<const Shape>(tmp, form));
 }
-
-// void drawRectangle()
-// {
-//     std::lock_guard lock(draw_mtx);
-//     shape_callback.push_back(std::make_shared<const Rectangle>(2, 4, rectangleVertex));
-// }
-
 
 void clear()
 {

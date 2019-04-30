@@ -1,28 +1,26 @@
 #pragma once
+#include "graphic/shape.hpp"
 #include <Eigen/Dense>
 
 namespace Graphic
 {
 void initialize();
 void finalize();
-
-// 点群
-void drawPoints(const std::vector<Eigen::Vector2d>& points);
-// 四角形
-void drawRectangle();
-// 軌跡
-void drawLines();
-// 矢印
-void drawArrow();
-// clear
-void clear();
+bool isRunning();
 
 enum Color {
-    BLUE = 0,
+    RED = 0,
     GREEN,
+    BLUE,
     YELLOW,
+    PURPLE,
     WHITE,
+    BLACK,
 };
+
+void draw(const Eigen::Vector2d& point, Form form = Form::POINT, Color color = Color::WHITE);
+void draw(const std::vector<Eigen::Vector2d>& points, Form form, Color color = Color::WHITE);
+void clear();
 
 
 }  // namespace Graphic
