@@ -37,6 +37,10 @@ foreach(FLAG IN LISTS CXX_WARNING_FLAGS)
 endforeach()
 message("Build type:\n\t${CMAKE_BUILD_TYPE}")
 
+# Eigen3
+find_package(Eigen3 REQUIRED)
+include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS})
+
 # GLEW
 find_package(GLEW REQUIRED)
 include_directories(${GLEW_INCLUDE_DIRS})

@@ -6,15 +6,20 @@
 int main()
 {
     using namespace Graphic;
-    init();
+    initialize();
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::vector<Eigen::Vector2d> points;
     for (int i = 0; i < 10; i++) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        drawRectangle();
+        points.push_back(Eigen::Vector2d::Random());
+    }
+
+
+    for (int i = 0; i < 3; i++) {
+        drawPoints(points);
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         clear();
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    join();
+
+    finalize();
 }

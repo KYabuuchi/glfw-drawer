@@ -1,5 +1,6 @@
 #pragma once
 #include <GL/glew.h>
+#include <vector>
 
 namespace Graphic
 {
@@ -14,7 +15,7 @@ public:
     };
 
     // コンストラクタ
-    Object(GLint dimension, GLsizei vertex_count, const Vertex* vertex)
+    Object(GLint dimension, GLsizei vertex_count, const std::vector<Vertex>& vertex)
     {
         // VAO
         glGenVertexArrays(1, &vao);
@@ -23,7 +24,7 @@ public:
         // VBO
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, vertex_count * sizeof(Vertex), vertex, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vertex_count * sizeof(Vertex), &vertex.at(0), GL_STATIC_DRAW);
 
         // attribute: position
         glVertexAttribPointer(0, dimension, GL_FLOAT, GL_FALSE, sizeof(Vertex), static_cast<Vertex*>(0)->position);
