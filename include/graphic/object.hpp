@@ -28,6 +28,7 @@ public:
         // attribute: position
         glVertexAttribPointer(0, dimension, GL_FLOAT, GL_FALSE, sizeof(Vertex), static_cast<Vertex*>(0)->position);
         glEnableVertexAttribArray(0);
+
         // attribute: color
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), static_cast<Vertex*>(0)->color);
         glEnableVertexAttribArray(1);

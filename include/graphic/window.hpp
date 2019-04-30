@@ -41,6 +41,8 @@ public:
         resize(window, width, height);
     }
 
+    void activate() { glfwMakeContextCurrent(window); }
+
     virtual ~Window() { glfwDestroyWindow(window); }
 
     // mouse wheel
@@ -78,8 +80,8 @@ public:
         glfwSwapBuffers(window);
 
         // イベント処理待ち
-        glfwWaitEvents();
-        // glfwPollEvents();
+        // glfwWaitEvents();
+        glfwPollEvents();
 
         // マウスの左ボタン
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) != GLFW_RELEASE) {

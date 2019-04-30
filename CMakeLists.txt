@@ -48,7 +48,7 @@ file(GLOB SOURCES src/*/*.cpp)
 
 # cmake-format: off
 #===============================
-add_executable(main main.cpp)
-target_link_libraries(main GL glfw GLEW)
+add_executable(main main.cpp ${SOURCES})
+target_link_libraries(main GL glfw GLEW pthread)
 #===============================
 # cmake-format: on

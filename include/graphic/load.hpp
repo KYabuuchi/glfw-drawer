@@ -42,7 +42,6 @@ GLboolean printProgramInfoLog(GLuint program)
     return static_cast<GLboolean>(status);
 }
 
-
 GLuint createProgram(const char* vsrc, const char* fsrc)
 {
     const GLuint program(glCreateProgram());

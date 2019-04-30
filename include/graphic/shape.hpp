@@ -25,6 +25,16 @@ public:
     }
 };
 
+class Triangle : public Shape
+{
+protected:
+    virtual void execute() const override { glDrawArrays(GL_LINE_LOOP, 0, vertex_count); }
+
+public:
+    Triangle(GLint size, GLsizei vertex_count, const Object::Vertex* vertices)
+        : Shape(size, vertex_count, vertices) {}
+};
+
 class Rectangle : public Shape
 {
 protected:
@@ -34,6 +44,7 @@ public:
     Rectangle(GLint size, GLsizei vertex_count, const Object::Vertex* vertices)
         : Shape(size, vertex_count, vertices) {}
 };
+
 class Points : public Shape
 {
 protected:
