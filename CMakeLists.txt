@@ -49,10 +49,18 @@ link_libraries(${GLEW_LIBRARIES})
 # header & source
 include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
 file(GLOB SOURCES src/*/*.cpp)
+message(${CMAKE_CURRENT_LIST_DIR}/include)
 
-# cmake-format: off
-#===============================
-add_executable(main main.cpp ${SOURCES})
-target_link_libraries(main GL glfw GLEW pthread)
-#===============================
-# cmake-format: on
+# library
+add_library(glfw-drawer STATIC ${SOURCES})
+target_link_libraries(glfw-drawer GL glfw GLEW pthread)
+
+# If toplevel
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_LIST_DIR)
+    set(TOPLEVEL True)
+endif()
+
+if(TOPLEVEL)
+    add_executable(main main.cpp)
+    target_link_libraries(main glfw-drawer)
+endif()
