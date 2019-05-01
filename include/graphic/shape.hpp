@@ -34,7 +34,7 @@ protected:
             glDrawArrays(GL_LINE_STRIP, 0, vertex_size);
             break;
         case RECTANGLE:
-            glDrawArrays(GL_LINE_LOOP, 0, vertex_size);
+            glDrawArrays(GL_LINE_LOOP, 0, 4);
             break;
         default:
             glDrawArrays(GL_POINTS, 0, vertex_size);

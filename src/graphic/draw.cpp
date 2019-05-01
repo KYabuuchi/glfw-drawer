@@ -18,10 +18,10 @@ bool stop_request = false;
 
 const std::vector<std::array<GLfloat, 3>> RGB
     = {
-        {1.0f, 0.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f},
-        {0.0f, 0.0f, 1.0f},
-        {1.0f, 1.0f, 0.0f},
+        {1.0f, 0.3f, 0.3f},
+        {0.3f, 1.0f, 0.3f},
+        {0.3f, 0.3f, 1.0f},
+        {1.0f, 1.0f, 0.2f},
         {0.9f, 0.0f, 1.0f},
         {1.0f, 1.0f, 1.0f},
         {0.0f, 0.0f, 0.0f},
@@ -129,6 +129,31 @@ void draw(const std::vector<Eigen::Vector2d>& points, Form form, Color color)
     std::lock_guard lock(draw_mtx);
     shape_callback.push_back(std::make_shared<const Shape>(tmp, form));
 }
+
+void drawArrow(const Eigen::Vector2d& head, const Eigen::Vector2d& tail, Color color)
+{
+    std::vector<Object::Vertex> tmp;
+    double k = 0.2;
+    Eigen::Vector2d d = head - tail;
+    Eigen::Vector2d n(-d.y(), d.x());
+    n = n / n.norm() * d.norm();
+    Eigen::Vector2d neck1 = head - d * 0.3 + k * n;
+    Eigen::Vector2d neck2 = head - d * 0.3 - k * n;
+
+    std::vector<Eigen::Vector2d> points = {head, neck1, neck2, head, tail};
+    for (const auto& p : points)
+        tmp.push_back({static_cast<GLfloat>(p.x()), static_cast<GLfloat>(p.y()),
+            RGB[color][0], RGB[color][1], RGB[color][2]});
+
+    std::lock_guard lock(draw_mtx);
+    shape_callback.push_back(std::make_shared<const Shape>(tmp, Form::CURVE));
+}
+
+void drawArrow(const std::vector<Eigen::Vector2d>& points, Color color)
+{
+    drawArrow(points[0], points[1], color);
+}
+
 
 void clear()
 {
